@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trips
+  namespace: api
+spec:
+  selector:
+    matchLabels:
+      run: trips
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: trips
+    spec:
+      containers:
+      - name: trips
+        image: registryqrc0144.azurecr.io/trips:1.0
+        env:
+        - name: SQL_USER
+          value: "sqladminqRc0144"
+        - name: SQL_PASSWORD
+          value: "cJ7lt1Za0"
+        - name: SQL_SERVER
+          value: "sqlserverqrc0144.database.windows.net"
+        - name: SQL_DBNAME
+          value: "mydrivingDB"
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trips
+  namespace: api
+  labels:
+    run: trips
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    run: trips
