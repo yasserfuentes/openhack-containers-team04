@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poi
+spec:
+  selector:
+    matchLabels:
+      run: poi
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: poi
+    spec:
+      containers:
+      - name: poi
+        image: registryqrc0144.azurecr.io/poi:1.1
+        env:
+        - name: SQL_USER
+          value: "sqladminqRc0144"
+        - name: SQL_PASSWORD
+          value: "cJ7lt1Za0"
+        - name: SQL_SERVER
+          value: "sqlserverqrc0144.database.windows.net"
+        - name: SQL_DBNAME
+          value: "mydrivingDB"
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: poi
+  labels:
+    run: poi
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    run: poi
