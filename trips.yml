@@ -17,16 +17,29 @@ spec:
       - name: trips
         image: registryqrc0144.azurecr.io/trips:1.0
         env:
-        - name: SQL_USER
-          value: "sqladminqRc0144"
-        - name: SQL_PASSWORD
-          value: "cJ7lt1Za0"
+        #- name: SQL_USER
+        #  value: "sqladminqRc0144"
+        #- name: SQL_PASSWORD
+        #  value: "cJ7lt1Za0"
         - name: SQL_SERVER
           value: "sqlserverqrc0144.database.windows.net"
         - name: SQL_DBNAME
           value: "mydrivingDB"
         ports:
         - containerPort: 80
+        volumeMounts:
+        - name: secrets-store-inline
+          mountPath: "/secrets"
+          readOnly: true
+      volumes:
+      - name: secrets-store-inline
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "azure-kvname"
+          nodePublishSecretRef:                       # Only required when using service principal mode
+            name: secrets-store-creds                 # Only required when using service principal mode
 ---
 apiVersion: v1
 kind: Service
