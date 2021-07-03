@@ -1,0 +1,50 @@
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: soteria.azurecr.io
+        username: ${{ secrets.acr_soteria_username }}
+        password: ${{ secrets.acr_soteria_password }}
+    
+    - name: Build and push image to ACR
+      id: build-image
+      run: |
+        docker build "$GITHUB_WORKSPACE/temp.ps1" -f  "https://github.com/yasserfuentes/openhack-containers-team04" -t soteria.azurecr.io/k8syf1:${{ github.sha }} --label dockerfile-path=https://github.com/yasserfuentes/openhack-containers-team04
+        docker push soteria.azurecr.io/k8syf1:${{ github.sha }}
+    
+    - uses: azure/k8s-set-context@v1
+      with:
+         kubeconfig: ${{ secrets.aks_k8syf1_kubeConfig }}
+      id: login
+    
+    - name: Create namespace
+      run: |
+        namespacePresent=`kubectl get namespace | grep k8s-yf1a663 | wc -l`
+        if [ $namespacePresent -eq 0 ]
+        then
+            echo `kubectl create namespace k8s-yf1a663`
+        fi
+
+    - uses: azure/k8s-create-secret@v1
+      with:
+        namespace: k8s-yf1a663
+        container-registry-url: soteria.azurecr.io
+        container-registry-username: ${{ secrets.acr_soteria_username }}
+        container-registry-password: ${{ secrets.acr_soteria_password }}
+        secret-name: k8syf1dockerauth
+       
+    - uses: azure/k8s-deploy@v1.2
+      with:
+        namespace: k8s-yf1a663
+        manifests: |
+          manifests/deployment.yml
+          manifests/service.yml
+        images: |
+          soteria.azurecr.io/k8syf1:${{ github.sha }}
+        imagepullsecrets: |
+          k8syf1dockerauth
