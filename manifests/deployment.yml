@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "k8syf1-4e5b"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "k8syf1-4e5b"
+  template:
+    metadata:
+      labels:
+        app: "k8syf1-4e5b"
+    spec:
+      containers:
+        - name: "k8syf1-4e5b"
+          image: "soteria.azurecr.io/k8syf1"
+          ports:
+          - containerPort: 80
